@@ -1,0 +1,141 @@
+{
+  "name": "person",
+  "fields": [
+    {
+      "name": "firstName",
+      "type": "text",
+      "html": {
+        "id": "first-name",
+        "label": "First name",
+        "placeholder": "First name"
+      },
+      "constraints": {
+        "required": true,
+        "maxlength": 10
+      }
+    },
+    {
+      "name": "lastName",
+      "type": "text",
+      "html": {
+        "label": "Last name",
+        "placeholder": "Last name"
+      },
+      "constraints": {
+        "required": true,
+        "maxlength": 10
+      }
+    },
+    {
+      "name": "age",
+      "html": {
+        "label": "Age",
+        "placeholder": "Age"
+      },
+      "type": "number",
+      "constraints": {
+        "min": 15,
+        "max": 125
+      }
+    },
+    {
+      "name": "gender",
+      "type": "radio-group",
+      "html": {
+        "label": "Gender",
+        "placeholder": "Gender"
+      },
+      "constraints": {
+        "values": [
+          {
+            "label": "Male",
+            "value": "M"
+          },
+          {
+            "label": "Female",
+            "value": "F"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ssn",
+      "type": "text",
+      "html": {
+        "label": "Social Security Number",
+        "placeholder": "123456-123K"
+      },
+      "constraints": {
+        "required": true,
+        "functions": [
+          "validateSsn"
+        ]
+      }
+    },
+    {
+      "name": "guardian",
+      "type": "text",
+      "html": {
+        "label": "Social Security Number of Guardian",
+        "placeholder": "123456-123K"
+      },
+      "constraints": {
+        "required": [
+          {
+            "type": "max",
+            "field": "age",
+            "value": 18
+          }
+        ],
+        "functions": [
+          "validateSsn"
+        ]
+      }
+    },
+    {
+      "name": "childrenGroup",
+      "type": "group",
+      "constraints": {
+        "maxlength": 5
+      },
+      "fields": [
+        {
+          "name": "firstName",
+          "type": "text",
+          "html": {
+            "label": "First name",
+            "placeholder": "First name"
+          },
+          "constraints": {
+            "required": true,
+            "maxlength": 10
+          }
+        },
+        {
+          "name": "lastName",
+          "type": "text",
+          "html": {
+            "label": "Last name",
+            "placeholder": "Last name"
+          },
+          "constraints": {
+            "required": true,
+            "maxlength": 10
+          }
+        },
+        {
+          "name": "age",
+          "type": "number",
+          "html": {
+            "label": "Age",
+            "placeholder": "Age"
+          },
+          "constraints": {
+            "max": 125,
+            "min": 15
+          }
+        }
+      ]
+    }
+  ]
+}
