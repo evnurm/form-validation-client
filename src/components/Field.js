@@ -3,9 +3,7 @@ import { INPUT_TYPES } from '../form-input-types';
 import BasicField from './BasicField';
 import RadioGroupField from './RadioGroupField';
 
-
-
-function Field({ specification }) {
+function Field({ specification, onChange }) {
 
   const validateSpecification = () => {
     if (!specification.type) {
@@ -23,9 +21,9 @@ function Field({ specification }) {
 
   switch(specification.type) {
     case INPUT_TYPES.RADIO_GROUP:
-      return <RadioGroupField specification={specification} />;
+      return <RadioGroupField specification={specification} onChange={onChange} />;
     default:
-      return <BasicField specification={specification} />;
+      return <BasicField specification={specification} onChange={onChange} />;
   }
 }
 

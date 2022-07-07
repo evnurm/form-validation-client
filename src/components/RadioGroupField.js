@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 
-function RadioGroupField({ specification }) {
+function RadioGroupField({ specification, onChange }) {
   const [chosenValue, setChosenValue] = useState(undefined);
 
   const handleChange = (event, value) => {
     event.preventDefault();
     setChosenValue(value);
+    onChange(specification.name, value);
   };
 
   return (

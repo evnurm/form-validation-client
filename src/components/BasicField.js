@@ -5,11 +5,12 @@ const getHtmlId = (specification) => {
   return specification.name;
 };
 
-function BasicField({ specification }) {  
+function BasicField({ specification, onChange }) {  
   const [value, setValue] = useState('');
 
   const handleChange = (event) => {
     setValue(event.target.value);
+    onChange(specification.name, event.target.value);
   };
 
   return specification.type !== INPUT_TYPES.GROUP ? (
