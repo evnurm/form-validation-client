@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 
 function RadioGroupField({ name, label, constraints, onChange }) {
-  const [chosenValue, setChosenValue] = useState(undefined);
+  const [chosenValue, setChosenValue] = useState(null);
 
-  const handleChange = (event, value) => {
-    event.preventDefault();
+  const handleChange = (value) => {
     setChosenValue(value);
     onChange(name, value);
   };
@@ -22,7 +21,7 @@ function RadioGroupField({ name, label, constraints, onChange }) {
             name={name}
             value={value}
             id={`${name}-option-${index}`}
-            onChange={(event) => handleChange(event, value)}
+            onChange={() => handleChange(value)}
             checked={chosenValue === value}
           />
         </>

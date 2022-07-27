@@ -12,9 +12,8 @@ function Form({ specification }) {
   const handleFieldChange = useCallback((fieldName, value) => {
     form.setFieldValue(fieldName, value);
     setData({ ...data, [fieldName]: value });
-  }, [data, form]);
-                                   
-  const fields = useMemo(() => form.getFields().map(field => <Field name={field.name} type={field.type} label={field.label} constraints={field.constraints} onChange={handleFieldChange} />), [specification, handleFieldChange]);
+  }, [data, form]);      
+  const fields = useMemo(() => form.fields.map(field => <Field name={field.name} type={field.type} placeholder={field.placeholder} label={field.label} constraints={field.constraints} onChange={handleFieldChange} />), [specification, handleFieldChange]);
 
   return (
     <form method="POST" action="http://localhost:3001/form">
