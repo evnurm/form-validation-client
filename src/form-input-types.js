@@ -184,4 +184,4 @@ const ATTRIBUTES = {
   ]
 };
 
-module.exports = { INPUT_TYPES, ATTRIBUTES };
+export { INPUT_TYPES, ATTRIBUTES };

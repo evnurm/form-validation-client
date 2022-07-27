@@ -27,6 +27,18 @@
       }
     },
     {
+      "name": "email",
+      "html": {
+        "label": "Email",
+        "placeholder": "example@email.com"
+      },
+      "type": "email",
+      "constraints": {
+        "required": true,
+        "maxlength": 50
+      }
+    },
+    {
       "name": "age",
       "html": {
         "label": "Age",
@@ -136,6 +148,14 @@
           }
         }
       ]
+    },
+    {
+      "name": "submit",
+      "type": "submit",
+      "html": {
+        "placeholder": "Submit",
+        "label": "Submit"
+      }
     }
   ]
 }
