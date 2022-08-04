@@ -26,7 +26,7 @@ function BasicField({ name, type, constraints, label, placeholder, onChange }) {
   return type !== INPUT_TYPES.GROUP ? (
     <>
       {label &&
-        <label htmlFor={name}>{label}</label>
+        <label htmlFor={name}>{label} {constraints.required ? '(required)' : ''}</label>
       }
       <input
         type={type}

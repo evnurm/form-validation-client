@@ -67,7 +67,8 @@
             "label": "Female",
             "value": "F"
           }
-        ]
+        ],
+        "required": true
       }
     },
     {
@@ -148,14 +149,6 @@
           }
         }
       ]
-    },
-    {
-      "name": "submit",
-      "type": "submit",
-      "html": {
-        "placeholder": "Submit",
-        "label": "Submit"
-      }
     }
   ]
 }
