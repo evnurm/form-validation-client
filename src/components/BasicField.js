@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { INPUT_TYPES } from '../form-input-types';
 
-function BasicField({ name, type, constraints, label, placeholder, onChange }) {
-  const [value, setValue] = useState(null);
+function BasicField({ name, type, constraints, label, placeholder, onChange, value }) {
 
   // Convert string inputs to correct data type when necessary
   const fixInputType = (input) => {
@@ -19,8 +18,7 @@ function BasicField({ name, type, constraints, label, placeholder, onChange }) {
 
   const handleChange = (event) => {
     const value = fixInputType(event.target.value);
-    setValue(value);
-    onChange(name, value);
+    onChange(value);
   };
 
   return type !== INPUT_TYPES.GROUP ? (

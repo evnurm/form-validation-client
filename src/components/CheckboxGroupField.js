@@ -1,6 +1,6 @@
 import React from 'react';
 
-function RadioGroupField({ name, label, constraints, onChange, value: chosenValue }) {
+function CheckboxGroupField({ name, label, constraints, onChange, value: chosenValues }) {
   return (
     <div>
       <div>
@@ -8,19 +8,19 @@ function RadioGroupField({ name, label, constraints, onChange, value: chosenValu
       </div>
       {constraints.values.map(({ value, label }, index) => (
         <>
-          <label htmlFor={`${name}-option-${index}`}>{label}</label>
           <input
-            type="radio"
+            type="checkbox"
             name={name}
             value={value}
             id={`${name}-option-${index}`}
-            onChange={() => onChange(value)}
-            checked={chosenValue === value}
+            onChange={onChange}
+            checked={chosenValues?.includes(value)}
           />
+          <label htmlFor={`${name}-option-${index}`}>{label}</label>
         </>
       ))}
     </div>
   );
 }
 
-export default RadioGroupField;
+export default CheckboxGroupField;

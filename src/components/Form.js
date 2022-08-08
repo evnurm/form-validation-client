@@ -8,10 +8,11 @@ function Form() {
   const onClick = () => console.log('form.validate()', form.validate());
 
   const handleFieldChange = useCallback((fieldName, value) => {
+    console.log(fieldName, value)
     form.setFieldValue(fieldName, value);
     setData({ ...data, [fieldName]: value });
   }, [data, form]);      
-  const fields = useMemo(() => form.fields.map(field => <Field name={field.name} type={field.type} placeholder={field.placeholder} label={field.label} constraints={field.constraints} onChange={handleFieldChange} />), [handleFieldChange]);
+  const fields = useMemo(() => form.fields.map(field => <Field specification={field} />), [form.fields]);
 
   const submitForm = async () => {
     const formValidityState = form.validate();

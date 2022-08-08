@@ -1,6 +1,7 @@
 import { useContext, useEffect, useMemo, useState } from 'react';
 import typeValidators from '../utils/typeValidators';
 import constraintValidatorFunctions from '../utils/constraintValidators';
+import { getChangeHandler } from '../utils/changeHandlers';
 import { getFieldDependencies, isFieldRequired } from '../utils/formTools';
 import FormContext from '../FormContext';
 
@@ -65,7 +66,9 @@ const createField = (fieldSpec, formSpec, functions) => {
     placeholder: fieldSpec.html?.placeholder,
     constraints: { ...fieldSpec.constraints },
     validator: fieldValidator,
-    dependencies
+    dependencies,
+    fields: fieldSpec.fields?.map(field => createField(field)),
+    onChange: () => {}
   };
 };
 
@@ -79,7 +82,20 @@ const useForm = (name) => {
 
   const fields = useMemo(() => specification.fields.map(fieldSpec => createField(fieldSpec, specification, functions)), [specification]);
   const fieldData = useMemo(() => {
-    return fields.map(field => ({ ...field, constraints: { ...field.constraints, required: fieldsRequired[field.name] }, value: inputData[field.name], errors: fieldErrors[field.name] }));
+    return fields.map(field => ({
+      ...field,
+      constraints: {
+        ...field.constraints,
+        required: fieldsRequired[field.name]
+      },
+      value: inputData[field.name],
+      errors: fieldErrors[field.name],
+      onChange: (value) => {
+        const newValue = getChangeHandler(field.type)(value, inputData[field.name]);
+        setFieldValue(field.name, newValue);
+      }
+    }));
+  
   }, [inputData, validities, fields, fieldsRequired]);
 
   const evaluateRequiredConstraint = (field, inputValues) => {
