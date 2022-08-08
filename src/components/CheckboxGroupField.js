@@ -13,7 +13,7 @@ function CheckboxGroupField({ name, label, constraints, onChange, value: chosenV
             name={name}
             value={value}
             id={`${name}-option-${index}`}
-            onChange={() => onChange(value)}}
+            onChange={() =>  onChange(value)}
             checked={chosenValues?.includes(value)}
           />
           <label htmlFor={`${name}-option-${index}`}>{label}</label>

@@ -1,24 +1,18 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import useForm from '../hooks/useForm';
 import Field from './Field';
 
 function Form() {
-  const [data, setData] = useState({});
   const form = useForm('person');
-  const onClick = () => console.log('form.validate()', form.validate());
+  const onValidateClick = () => console.log('form.validate()', form.validate());
 
-  const handleFieldChange = useCallback((fieldName, value) => {
-    console.log(fieldName, value)
-    form.setFieldValue(fieldName, value);
-    setData({ ...data, [fieldName]: value });
-  }, [data, form]);      
   const fields = useMemo(() => form.fields.map(field => <Field specification={field} />), [form.fields]);
 
   const submitForm = async () => {
     const formValidityState = form.validate();
 
     if (formValidityState.validity) {
-      const formData =  form.getFieldValues();
+      const formData = form.getFieldValues();
       const result = await fetch('http://localhost:3001/form', {
         method: 'POST',
         body: JSON.stringify(formData),
@@ -38,7 +32,7 @@ function Form() {
       {fields}
     </form>
     <button onClick={submitForm}>Submit form</button>
-    <button onClick={onClick}>Validate form</button>
+    <button onClick={onValidateClick}>Validate form</button>
     </>
   );
 }
