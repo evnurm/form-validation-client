@@ -1,4 +1,10 @@
 import validators from './constraintValidators';
+import {
+  evaluateConstraintValidity,
+  evaluateRequiredValidity,
+  evaluateFunctionValidity,
+  evaluateTypeValidity
+} from './validationTools';
 
 export const isFieldRequired = ({ constraintValue, dependencies }) => {
   // Handle boolean values
@@ -27,4 +33,46 @@ export const getFieldDependencies = (formSpec, fieldSpec, values) => {
     fieldType: formSpec.fields.find(field => field.name === fieldName).type
   });
   return dependencies;
+};
+
+export const createField = (fieldSpec, formSpec, functions) => {
+  const dependencies = Array.isArray(fieldSpec.constraints?.required) ? fieldSpec.constraints.required.map(({ field }) => field) : [];
+  const fieldValidator = (values) => {
+    const errors = [];
+    const fieldValue = values[fieldSpec.name];
+
+    const requiredValidity = evaluateRequiredValidity(fieldSpec, formSpec, values, errors);
+    if (requiredValidity && !fieldValue) {
+      return { validity: true, errors };
+    } else if (!requiredValidity) {
+      return { validity: false, errors };
+    }
+
+    const typeValidity = evaluateTypeValidity(fieldSpec, fieldValue);
+    if (!typeValidity) {
+      return { validity: false, errors };
+    }
+
+    const constraintValidity = evaluateConstraintValidity(fieldSpec, fieldValue, errors);
+    if (!constraintValidity) {
+      return { validity: false, errors };
+    }
+
+    const functionValidity = evaluateFunctionValidity(fieldSpec, fieldValue, functions, errors);
+
+    if (!functionValidity) return { validity: false, errors };
+    return { validity: true, errors };
+  };
+
+  return {
+    name: fieldSpec.name,
+    type: fieldSpec.type,
+    label: fieldSpec.html?.label,
+    placeholder: fieldSpec.html?.placeholder,
+    constraints: { ...fieldSpec.constraints },
+    validator: fieldValidator,
+    dependencies,
+    fields: fieldSpec.fields?.map(field => createField(field)),
+    onChange: () => {}
+  };
 };
