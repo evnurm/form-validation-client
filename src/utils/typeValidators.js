@@ -10,7 +10,7 @@ const validateEmail = (value) => {
     const isString = validateText(value);
     
     // Regex source:  https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/email#validation
-    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/; // eslint-disable-line no-useless-escape
     return isString && emailRegex.test(value);
 };    
 
@@ -44,8 +44,8 @@ const validateURL = (value) => {
 };
 
 const validateColor = (value) => {
-    if (value?.length != 7) return false;
-    if (value[0] != '#') return false;
+    if (value?.length !== 7) return false;
+    if (value[0] !== '#') return false;
     
     return !Number.isNaN(Number('0x' + value.substring(1)));
 };
@@ -68,7 +68,7 @@ const validateTime = (value) => {
   return hourIsValid && minutesIsValid;
 };
 
-export default {
+const typeValidators = {
     [INPUT_TYPES.TEXT]: validateText,
     [INPUT_TYPES.TEXTAREA]: validateText,
     [INPUT_TYPES.NUMBER]: validateNumber,
@@ -93,3 +93,5 @@ export default {
     [INPUT_TYPES.CHECKBOX_GROUP]: validateCheckboxGroup,
     [INPUT_TYPES.SELECT]: () => true
 };
+
+export default typeValidators;
