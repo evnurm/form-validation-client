@@ -10,6 +10,12 @@ describe('validators', () => {
       expect(maxLenValidator({ value: 'aaaaaa', constraintValue: 5, type: 'text' })).toBe(false);
     });
 
+    it('should validate textarea maxlength correctly', () => {
+      expect(maxLenValidator({ value: 'aaaa', constraintValue: 5, type: 'textarea' })).toBe(true);
+      expect(maxLenValidator({ value: 'aaaaa', constraintValue: 5, type: 'textarea' })).toBe(true);
+      expect(maxLenValidator({ value: 'aaaaaa', constraintValue: 5, type: 'textarea' })).toBe(false);
+    });
+
     it('should validate email maxlength correctly', () => {
       expect(maxLenValidator({ value: 'a.b@email.com', constraintValue: 14, type: 'email' })).toBe(true);
       expect(maxLenValidator({ value: 'ab.c@email.com', constraintValue: 14, type: 'email' })).toBe(true);
@@ -48,6 +54,12 @@ describe('validators', () => {
       expect(minLenValidator({ value: 'aaaa', constraintValue: 5, type: 'text' })).toBe(false);
       expect(minLenValidator({ value: 'aaaaa', constraintValue: 5, type: 'text' })).toBe(true);
       expect(minLenValidator({ value: 'aaaaaa', constraintValue: 5, type: 'text' })).toBe(true);
+    });
+
+    it('should validate textarea minlength correctly', () => {
+      expect(minLenValidator({ value: 'aaaa', constraintValue: 5, type: 'textarea' })).toBe(false);
+      expect(minLenValidator({ value: 'aaaaa', constraintValue: 5, type: 'textarea' })).toBe(true);
+      expect(minLenValidator({ value: 'aaaaaa', constraintValue: 5, type: 'textarea' })).toBe(true);
     });
 
     it('should validate email minlength correctly', () => {
@@ -151,5 +163,13 @@ describe('validators', () => {
       expect(valuesValidator({ value: ['option1'], constraintValue, type: 'checkbox-group'})).toBe(true); // valid option
       expect(valuesValidator({ value: ['option1', 'option2'], constraintValue, type: 'checkbox-group'})).toBe(true); // multiple valid options
     });
+
+    it('should correctly validate a select element', () => {
+      const constraintValue = [{ label: 'Option 1', value: 'option1'}, { label: 'Option 2', value: 'option2'}];
+      expect(valuesValidator({ value: 'test', constraintValue, type: 'select'})).toBe(false); // invalid option
+      expect(valuesValidator({ value: 'option1', constraintValue, type: 'select'})).toBe(true); // valid option
+      expect(valuesValidator({ value: 'option2', constraintValue, type: 'select'})).toBe(true); // valid option
+      expect(valuesValidator({ value: ['option1', 'option2'], constraintValue, type: 'select'})).toBe(false); // multiple valid options
+    })
   });
 });

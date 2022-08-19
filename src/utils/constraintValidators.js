@@ -62,6 +62,7 @@ const validateStep = ({ value, constraintValue, type, min }) => {
 const validateMinLength = ({ value, constraintValue, type }) => {
   switch (type) {
     case INPUT_TYPES.TEXT:
+    case INPUT_TYPES.TEXTAREA:
     case INPUT_TYPES.EMAIL:
     case INPUT_TYPES.PASSWORD:
     case INPUT_TYPES.SEARCH:
@@ -76,6 +77,7 @@ const validateMinLength = ({ value, constraintValue, type }) => {
 const validateMaxLength = ({ value, constraintValue, type }) => {
   switch (type) {
     case INPUT_TYPES.TEXT:
+    case INPUT_TYPES.TEXTAREA:  
     case INPUT_TYPES.EMAIL:
     case INPUT_TYPES.PASSWORD:
     case INPUT_TYPES.SEARCH:
@@ -105,19 +107,18 @@ const validateValuesInSet = (value, constraintValue) => {
   return value.every(val => allowedValues.includes(val));
 };
 
-
 // oneOf = one of the options provided in constraintValue
 const validateOneOf = (value, constraintValue) => constraintValue.map(option => option.value).includes(value);
 
-
 const validateValues = ({ value, constraintValue, type }) => {
   switch (type) {
-    case INPUT_TYPES.RADIO_GROUP: return validateOneOf(value, constraintValue);
+    case INPUT_TYPES.RADIO_GROUP:
+    case INPUT_TYPES.SELECT:
+      return validateOneOf(value, constraintValue);
     case INPUT_TYPES.CHECKBOX_GROUP: return validateValuesInSet(value, constraintValue);
     default: throw new Error('values constraint is not supported for type ' + type);
   }
 };
-
 
 const validateRequired = ({ value, constraintValue, dependencies }) => {
   // Handle boolean values

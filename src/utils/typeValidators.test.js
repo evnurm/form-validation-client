@@ -11,6 +11,16 @@ describe('typeValidators', () => {
       expect(textValidator(() => { })).toBe(false);
     });
   });
+  describe('textarea', () => {
+    it('validates textarea correctly', () => {
+      const textValidator = typeValidators['textarea'];
+      expect(textValidator('test')).toBe(true);
+      expect(textValidator(3)).toBe(false);
+      expect(textValidator()).toBe(false);
+      expect(textValidator({})).toBe(false);
+      expect(textValidator(() => { })).toBe(false);
+    });
+  });
 
   describe('number', () => {
     it('validates number correctly', () => {

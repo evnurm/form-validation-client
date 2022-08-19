@@ -70,6 +70,7 @@ const validateTime = (value) => {
 
 export default {
     [INPUT_TYPES.TEXT]: validateText,
+    [INPUT_TYPES.TEXTAREA]: validateText,
     [INPUT_TYPES.NUMBER]: validateNumber,
     [INPUT_TYPES.DATE]: validateDate,
     [INPUT_TYPES.DATETIME_LOCAL]: validateDate,
@@ -89,5 +90,6 @@ export default {
     [INPUT_TYPES.HIDDEN]: () => true, // no limitations
     [INPUT_TYPES.GROUP]: validateGroup,
     [INPUT_TYPES.BUTTON]: () => true,
-    [INPUT_TYPES.CHECKBOX_GROUP]: validateCheckboxGroup
+    [INPUT_TYPES.CHECKBOX_GROUP]: validateCheckboxGroup,
+    [INPUT_TYPES.SELECT]: () => true
 };
