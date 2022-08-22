@@ -1,76 +1,7 @@
 import { useContext, useEffect, useMemo, useState } from 'react';
-import typeValidators from '../utils/typeValidators';
-import constraintValidatorFunctions from '../utils/constraintValidators';
 import { getChangeHandler } from '../utils/changeHandlers';
-import { getFieldDependencies, isFieldRequired } from '../utils/formTools';
+import { isFieldRequired, createField } from '../utils/formTools';
 import FormContext from '../FormContext';
-
-const createField = (fieldSpec, formSpec, functions) => {
-
-  const constraintKeys = Object.keys(fieldSpec.constraints || {})?.filter(constraint => !['functions', 'required'].includes(constraint));
-  const constraintValues = constraintKeys.map(key => fieldSpec.constraints[key]);
-
-  const dependencies = Array.isArray(fieldSpec.constraints?.required) ? fieldSpec.constraints.required.map(({ field }) => field) : [];
-
-  const typeValidator = typeValidators[fieldSpec.type];
-  const constraintValidators = constraintKeys
-    .map(constraint => {
-      const validator = constraintValidatorFunctions[constraint];
-      if (!validator) console.error(`Unsupported constraint '${constraint}'`);
-      return validator;
-    });
-
-  const functionValidators = fieldSpec.constraints?.functions?.map(functionName => functions[functionName]) || [];
-  const requiredValidator = constraintValidatorFunctions.required;
-
-  const fieldValidator = (values) => {
-    const errors = [];
-    const fieldValue = values[fieldSpec.name];
-
-    if (fieldSpec.constraints?.required && !requiredValidator({ value: fieldValue, constraintValue: fieldSpec.constraints.required, dependencies: getFieldDependencies(formSpec, fieldSpec, values) })) {
-      errors.push('required');
-      return { validity: false, errors };
-    }
-
-    // If required constraint passed and the field has no value, the field is valid
-    if (!fieldValue)
-      return { validity: true, errors };
-
-    if (!typeValidator(fieldValue)) {
-      errors.push('type');
-      return { validity: false, errors };
-    }
-
-    const constraintValidities = constraintValidators.map((validator, index) => {
-      const validationResult = validator({ value: fieldValue, constraintValue: constraintValues[index], type: fieldSpec.type });
-      if (!validationResult) 
-        errors.push(constraintKeys[index]);
-      return validationResult;
-    });
-
-    const functionValidity = functionValidators.map((func, index) => {
-      const validity = func(fieldValue);
-      if (!validity)
-        errors.push(fieldSpec.constraints.functions[index]);
-      return validity;
-    }).every(validity => validity);
-
-    if (!functionValidity) return false;
-    return { validity: constraintValidities.every(isValid => isValid), errors };
-  };
-
-  return {
-    name: fieldSpec.name,
-    type: fieldSpec.type,
-    label: fieldSpec.html?.label,
-    placeholder: fieldSpec.html?.placeholder,
-    constraints: { ...fieldSpec.constraints },
-    validator: fieldValidator,
-    dependencies,
-    fields: fieldSpec.fields?.map(field => createField(field)),
-    onChange: () => {}
-  };
-};
 
 const useForm = (name) => {
   const { forms, functions } = useContext(FormContext);
