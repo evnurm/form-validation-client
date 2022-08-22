@@ -1,3 +1,4 @@
+import { getChangeHandler } from './changeHandlers';
 import validators from './constraintValidators';
 import {
   evaluateConstraintValidity,
@@ -73,6 +74,6 @@ export const createField = (fieldSpec, formSpec, functions) => {
     validator: fieldValidator,
     dependencies,
     fields: fieldSpec.fields?.map(field => createField(field)),
-    onChange: () => {}
+    onChange: getChangeHandler(fieldSpec.type)
   };
 };
