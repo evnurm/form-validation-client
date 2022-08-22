@@ -17,9 +17,11 @@ const INPUT_TYPES = {
   RANGE: 'range',
   RESET: 'reset',
   SEARCH: 'search',
+  SELECT: 'select',
   SUBMIT: 'submit',
   TEL: 'tel',
   TEXT: 'text',
+  TEXTAREA: 'textarea',
   TIME: 'time',
   URL: 'url',
   WEEK: 'week'
