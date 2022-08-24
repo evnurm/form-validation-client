@@ -3,7 +3,7 @@ import constraintValidatorFunctions from '../utils/constraintValidators';
 import typeValidators from './typeValidators';
 
 export const getFunctionValidators = (fieldSpec, functions) => {
-  return fieldSpec.constraints?.functions?.map(functionName => functions[functionName]) || [];
+  return fieldSpec.constraints?.clientSideFunctions?.map(functionName => functions[functionName]) || [];
 };
 
 const getConstraintValidators = (constraintKeys) => {
@@ -39,7 +39,7 @@ export const evaluateTypeValidity = (fieldSpec, fieldValue, errors) => {
 export const evaluateConstraintValidity = (fieldSpec, fieldValue, errors) => {
   const constraintKeys = Object
     .keys(fieldSpec.constraints || {})
-    ?.filter(constraint => !['functions', 'required'].includes(constraint));
+    ?.filter(constraint => !['clientSideFunctions', 'serverSideFunctions', 'required'].includes(constraint));
 
   const constraintValues = constraintKeys.map(key => fieldSpec.constraints[key]);
 
@@ -58,7 +58,7 @@ export const evaluateFunctionValidity = (fieldSpec, fieldValues, functions, erro
   const functionValidity = functionValidators.map((func, index) => {
     const validity = func(fieldValues[fieldSpec.name], fieldValues);
     if (!validity)
-      errors.push(fieldSpec.constraints.functions[index]);
+      errors.push(fieldSpec.constraints.clientSideFunctions[index]);
     return validity;
   }).every(validity => validity);
 

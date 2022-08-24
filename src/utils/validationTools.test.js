@@ -71,7 +71,8 @@ describe('validationTools', () => {
       const fieldSpec = { 
         type: 'text',
         constraints: {
-          functions: ['customValidator']
+          clientSideFunctions: ['customValidator'],
+          serverSideFunctions: ['customValidator']
         }
       };
       
@@ -90,7 +91,7 @@ describe('validationTools', () => {
         name: 'testField',
         type: 'text',
         constraints: {
-          functions: [
+          clientSideFunctions: [
             'textStartsWithX'
           ]
         }
@@ -106,7 +107,7 @@ describe('validationTools', () => {
         name: 'testField',
         type: 'text',
         constraints: {
-          functions: [
+          clientSideFunctions: [
             'textStartsWithX',
             'textEndsWithY'
           ]
@@ -129,7 +130,7 @@ describe('validationTools', () => {
         name: 'testField1',
         type: 'number',
         constraints: {
-          functions: [
+          clientSideFunctions: [
             'validator'
           ]
         }
@@ -170,7 +171,7 @@ describe('validationTools', () => {
       expect(evaluateRequiredValidity(fieldSpec, formSpec, { testField: 'value' }, [])).toBe(true);
     });
 
-    it('does not require a value if required = true', () => {
+    it('does not require a value if required = false', () => {
       const fieldSpec = {
         type: 'text',
         name: 'testField',
