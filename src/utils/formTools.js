@@ -36,8 +36,15 @@ export const getFieldDependencies = (formSpec, fieldSpec, values) => {
   return dependencies;
 };
 
+const getDependencyFieldNames = fieldSpec => {
+  const specDependencies = fieldSpec?.dependencies || [];
+  const requiredDependencies = Array.isArray(fieldSpec.constraints?.required) ? fieldSpec.constraints.required.map(({ field }) => field) : [];
+  const set = new Set([...specDependencies, ...requiredDependencies]); // remove duplicates
+  return [...set];
+};
+
 export const createField = (fieldSpec, formSpec, functions) => {
-  const dependencies = Array.isArray(fieldSpec.constraints?.required) ? fieldSpec.constraints.required.map(({ field }) => field) : [];
+  const dependencies = getDependencyFieldNames(fieldSpec);
   const fieldValidator = (values) => {
     const errors = [];
     const fieldValue = values[fieldSpec.name];
@@ -59,7 +66,7 @@ export const createField = (fieldSpec, formSpec, functions) => {
       return { validity: false, errors };
     }
 
-    const functionValidity = evaluateFunctionValidity(fieldSpec, fieldValue, functions, errors);
+    const functionValidity = evaluateFunctionValidity(fieldSpec, values, functions, errors);
 
     if (!functionValidity) return { validity: false, errors };
     return { validity: true, errors };

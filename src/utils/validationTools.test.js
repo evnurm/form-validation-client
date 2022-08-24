@@ -87,6 +87,7 @@ describe('validationTools', () => {
 
     it('evaluates one function constraint correctly', () => {
       const fieldSpec = {
+        name: 'testField',
         type: 'text',
         constraints: {
           functions: [
@@ -95,13 +96,14 @@ describe('validationTools', () => {
         }
       };
 
-      expect(evaluateFunctionValidity(fieldSpec, 'X', functions, [])).toBe(true);
-      expect(evaluateFunctionValidity(fieldSpec, 'X1', functions, [])).toBe(true);
-      expect(evaluateFunctionValidity(fieldSpec, 'invalid string', functions, [])).toBe(false);
+      expect(evaluateFunctionValidity(fieldSpec, { testField: 'X' }, functions, [])).toBe(true);
+      expect(evaluateFunctionValidity(fieldSpec, { testField: 'X1' }, functions, [])).toBe(true);
+      expect(evaluateFunctionValidity(fieldSpec, { testField: 'invalid string' }, functions, [])).toBe(false);
     });
 
     it('evaluates multiple function constraints correctly', () => {
       const fieldSpec = {
+        name: 'testField',
         type: 'text',
         constraints: {
           functions: [
@@ -111,13 +113,31 @@ describe('validationTools', () => {
         }
       };
 
-      expect(evaluateFunctionValidity(fieldSpec, 'invalid string', functions, [])).toBe(false);
-      expect(evaluateFunctionValidity(fieldSpec, 'X', functions, [])).toBe(false);
-      expect(evaluateFunctionValidity(fieldSpec, 'Y', functions, [])).toBe(false);
-      expect(evaluateFunctionValidity(fieldSpec, 'X1', functions, [])).toBe(false);
-      expect(evaluateFunctionValidity(fieldSpec, '1Y', functions, [])).toBe(false);
-      expect(evaluateFunctionValidity(fieldSpec, 'XY', functions, [])).toBe(true);
-      expect(evaluateFunctionValidity(fieldSpec, 'XsomethingY', functions, [])).toBe(true);
+      expect(evaluateFunctionValidity(fieldSpec, { testField: 'invalid string' }, functions, [])).toBe(false);
+      expect(evaluateFunctionValidity(fieldSpec, { testField: 'X' }, functions, [])).toBe(false);
+      expect(evaluateFunctionValidity(fieldSpec, { testField: 'Y' }, functions, [])).toBe(false);
+      expect(evaluateFunctionValidity(fieldSpec, { testField: 'X1' }, functions, [])).toBe(false);
+      expect(evaluateFunctionValidity(fieldSpec, { testField: '1Y' }, functions, [])).toBe(false);
+      expect(evaluateFunctionValidity(fieldSpec, { testField: 'XY' }, functions, [])).toBe(true);
+      expect(evaluateFunctionValidity(fieldSpec, { testField: 'XsomethingY' }, functions, [])).toBe(true);
+    });
+
+    it('evaluates form-level function constraints correctly', () => {
+      const validator = (_, form) => form.testField1 > form.testField2;
+
+      const fieldSpec = {
+        name: 'testField1',
+        type: 'number',
+        constraints: {
+          functions: [
+            'validator'
+          ]
+        }
+      };
+
+      expect(evaluateFunctionValidity(fieldSpec, { testField1: 6, testField2: 5 }, { validator }, [])).toBe(true);
+      expect(evaluateFunctionValidity(fieldSpec, { testField1: 5, testField2: 5 }, { validator }, [])).toBe(false);
+      expect(evaluateFunctionValidity(fieldSpec, { testField1: 4, testField2: 5 }, { validator }, [])).toBe(false);
     });
   });
 

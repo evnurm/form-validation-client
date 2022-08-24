@@ -53,10 +53,10 @@ export const evaluateConstraintValidity = (fieldSpec, fieldValue, errors) => {
   return constraintValidities.every(isValid => isValid);
 };
 
-export const evaluateFunctionValidity = (fieldSpec, fieldValue, functions, errors) => {
+export const evaluateFunctionValidity = (fieldSpec, fieldValues, functions, errors) => {
   const functionValidators = getFunctionValidators(fieldSpec, functions);
   const functionValidity = functionValidators.map((func, index) => {
-    const validity = func(fieldValue);
+    const validity = func(fieldValues[fieldSpec.name], fieldValues);
     if (!validity)
       errors.push(fieldSpec.constraints.functions[index]);
     return validity;

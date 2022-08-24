@@ -63,6 +63,22 @@ const useForm = (name) => {
     setFieldsRequired({ ...fieldsRequired, ...newRequiredValues });
   };
 
+  const updateDependentFieldsValidity = (fieldName, inputValues, fieldValidities, errors) => {
+    const dependentFields = fields.filter(field => field.dependencies.includes(fieldName));
+    if (!dependentFields) return;
+
+    const validityStates = dependentFields.map(field => field.validator(inputValues));
+    
+    const newValidities = {...fieldValidities};
+    const newErrors = {...errors};
+    validityStates.forEach((validityState, index) => {
+      newValidities[dependentFields[index].name] = validityState.validity;
+      newErrors[dependentFields[index].name] = validityState.errors;
+    });
+
+    return { validities: newValidities, errors: newErrors };
+  };
+
   const getFieldValue = (fieldName) => {
     return inputData[fieldName];
   };
@@ -75,15 +91,18 @@ const useForm = (name) => {
     const newInputData = { ...inputData, [fieldName]: value };
     const { validity, errors } = field.validator(newInputData);
 
-    setValidities({
+    const newValidities = {
       ...validities,
       [fieldName]: validity
-    });
+    };
 
-    setFieldErrors({ ...fieldErrors, [fieldName]: errors });
+    const newErrors = {...fieldErrors, [fieldName]: errors };
     updateDependentFieldsRequired(fieldName, newInputData);
-
+    
+    const { validities: updatedValidities, errors: updatedErrors} = updateDependentFieldsValidity(fieldName, newInputData, newValidities, newErrors);
     setInputData(newInputData);
+    setValidities(updatedValidities);
+    setFieldErrors(updatedErrors);
   };
 
   const getFieldValues = () => {
