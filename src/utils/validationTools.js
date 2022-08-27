@@ -53,14 +53,21 @@ export const evaluateConstraintValidity = (fieldSpec, fieldValue, errors) => {
   return constraintValidities.every(isValid => isValid);
 };
 
-export const evaluateFunctionValidity = (fieldSpec, fieldValues, functions, errors) => {
+export const evaluateFunctionValidity = async (fieldSpec, fieldValues, functions, errors) => {
   const functionValidators = getFunctionValidators(fieldSpec, functions);
-  const functionValidity = functionValidators.map((func, index) => {
-    const validity = func(fieldValues[fieldSpec.name], fieldValues);
-    if (!validity)
+  const functionValidities = (
+    await Promise.allSettled(
+      functionValidators.map(func => Promise.resolve(func(fieldValues[fieldSpec.name], fieldValues)))
+    )
+  ).map(({ value }) => value);
+ 
+  let isValid = true;
+  functionValidities.forEach((validity, index) => {
+    if (!validity) {
       errors.push(fieldSpec.constraints.clientSideFunctions[index]);
-    return validity;
-  }).every(validity => validity);
+      isValid = false;
+    }
+  });
 
-  return functionValidity;
+  return isValid;
 };

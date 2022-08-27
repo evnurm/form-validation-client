@@ -45,7 +45,7 @@ const getDependencyFieldNames = fieldSpec => {
 
 export const createField = (fieldSpec, formSpec, functions) => {
   const dependencies = getDependencyFieldNames(fieldSpec);
-  const fieldValidator = (values) => {
+  const fieldValidator = async (values) => {
     const errors = [];
     const fieldValue = values[fieldSpec.name];
 
@@ -56,7 +56,7 @@ export const createField = (fieldSpec, formSpec, functions) => {
       return { validity: false, errors };
     }
 
-    const typeValidity = evaluateTypeValidity(fieldSpec, fieldValue);
+    const typeValidity = evaluateTypeValidity(fieldSpec, fieldValue, errors);
     if (!typeValidity) {
       return { validity: false, errors };
     }
@@ -66,7 +66,7 @@ export const createField = (fieldSpec, formSpec, functions) => {
       return { validity: false, errors };
     }
 
-    const functionValidity = evaluateFunctionValidity(fieldSpec, values, functions, errors);
+    const functionValidity = await evaluateFunctionValidity(fieldSpec, values, functions, errors);
 
     if (!functionValidity) return { validity: false, errors };
     return { validity: true, errors };

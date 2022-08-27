@@ -4,7 +4,7 @@ import Field from './Field';
 
 function Form() {
   const form = useForm('person');
-  const onValidateClick = () => console.log('form.validate()', form.validate());
+  const onValidateClick = async () => console.log('form.validate()',  await form.validate());
 
   const fields = useMemo(() => form.fields.map(field => <Field specification={field} />), [form.fields]);
 

@@ -27,7 +27,7 @@ const useForm = (name) => {
       }
     }));
   
-  }, [inputData, validities, fields, fieldsRequired]);
+  }, [inputData, validities, fields, fieldErrors, fieldsRequired]);
 
   const evaluateRequiredConstraint = (field, inputValues) => {
     if (!field.constraints?.required)
@@ -63,11 +63,11 @@ const useForm = (name) => {
     setFieldsRequired({ ...fieldsRequired, ...newRequiredValues });
   };
 
-  const updateDependentFieldsValidity = (fieldName, inputValues, fieldValidities, errors) => {
+  const updateDependentFieldsValidity = async (fieldName, inputValues, fieldValidities, errors) => {
     const dependentFields = fields.filter(field => field.dependencies.includes(fieldName));
     if (!dependentFields) return;
 
-    const validityStates = dependentFields.map(field => field.validator(inputValues));
+    const validityStates = (await Promise.allSettled(dependentFields.map(field => field.validator(inputValues)))).map(({ value }) => value);
     
     const newValidities = {...fieldValidities};
     const newErrors = {...errors};
@@ -83,13 +83,13 @@ const useForm = (name) => {
     return inputData[fieldName];
   };
 
-  const setFieldValue = (fieldName, value) => {
+  const setFieldValue = async (fieldName, value) => {
     const field = fields.find(field => field.name === fieldName);
     if (!field)
       throw new Error(`Cannot update non-existing field '${fieldName}'`);
 
     const newInputData = { ...inputData, [fieldName]: value };
-    const { validity, errors } = field.validator(newInputData);
+    const { validity, errors } = await field.validator(newInputData);
 
     const newValidities = {
       ...validities,
@@ -99,7 +99,7 @@ const useForm = (name) => {
     const newErrors = {...fieldErrors, [fieldName]: errors };
     updateDependentFieldsRequired(fieldName, newInputData);
     
-    const { validities: updatedValidities, errors: updatedErrors} = updateDependentFieldsValidity(fieldName, newInputData, newValidities, newErrors);
+    const { validities: updatedValidities, errors: updatedErrors} = await updateDependentFieldsValidity(fieldName, newInputData, newValidities, newErrors);
     setInputData(newInputData);
     setValidities(updatedValidities);
     setFieldErrors(updatedErrors);
@@ -109,8 +109,8 @@ const useForm = (name) => {
     return inputData;
   };
 
-  const validate = () => {
-    const validityStates = fields.map(field => field.validator(inputData));
+  const validate = async () => {
+    const validityStates = await Promise.allSettled(fields.map(field => field.validator(inputData)));
     const result = { validity: validityStates.every(validityState => validityState.validity), errors: {} };
 
     validityStates.forEach((validityState, index) => result.errors[fields[index].name] = validityState.errors);
