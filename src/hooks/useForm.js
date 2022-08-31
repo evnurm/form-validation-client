@@ -110,7 +110,7 @@ const useForm = (name) => {
   };
 
   const validate = async () => {
-    const validityStates = await Promise.allSettled(fields.map(field => field.validator(inputData)));
+    const validityStates = (await Promise.allSettled(fields.map(field => field.validator(inputData)))).map(({ value }) => value);
     const result = { validity: validityStates.every(validityState => validityState.validity), errors: {} };
 
     validityStates.forEach((validityState, index) => result.errors[fields[index].name] = validityState.errors);
