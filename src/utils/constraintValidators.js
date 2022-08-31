@@ -1,4 +1,5 @@
 import { INPUT_TYPES } from '../form-input-types';
+import { isFieldRequired } from './formTools';
 
 const validateStringMaxLength = (value, limit) => {
   return value?.length <= limit;
@@ -121,22 +122,10 @@ const validateValues = ({ value, constraintValue, type }) => {
 };
 
 const validateRequired = ({ value, constraintValue, dependencies }) => {
-  // Handle boolean values
-  if (typeof constraintValue === 'boolean') {
-    return constraintValue ? Boolean(value) : true;
-  }
-
-  // Handle array of conditions for a field being required
-  const constraintValidities = constraintValue.map(constraint => {
-    const { type, value, field } = constraint;
-    const func = validators[type];
-    const dependency = dependencies[field];
-    return func({ value: dependency?.value, constraintValue: value, type: dependency['fieldType'] });
-  });
-  const allValid = constraintValidities.every(validity => validity);
-
-  return !allValid ? true : Boolean(value);
+  return isFieldRequired({ constraintValue, dependencies }) ? Boolean(value) : true;
 };
+
+const validateEquals = ({ value, constraintValue }) => value === constraintValue;
 
 const validators = {
   'maxlength': validateMaxLength,
@@ -146,7 +135,9 @@ const validators = {
   'step': validateStep,
   'pattern': validatePattern,
   'values': validateValues,
-  'required': validateRequired
+  'oneOf': validateOneOf,
+  'required': validateRequired,
+  'equals': validateEquals
 };
 
 export default validators;

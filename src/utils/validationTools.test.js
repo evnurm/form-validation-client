@@ -339,7 +339,88 @@ describe('validationTools', () => {
       
       expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 18, dependency2: 79 }, [])).toBe(true); // both conditions invalid
       expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 18, dependency2: 80 }, [])).toBe(true); // dep1 invalid, dep2 valid
-      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 18, dependency2: 81 }, [])).toBe(true);  // dep1 invalid, dep2 valid
+      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 18, dependency2: 81 }, [])).toBe(true); // dep1 invalid, dep2 valid
+
+      // Value given for testField - should always be true
+      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 16, dependency2: 79, testField: 'value' }, [])).toBe(true);
+      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 16, dependency2: 80, testField: 'value' }, [])).toBe(true);
+      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 16, dependency2: 81, testField: 'value' }, [])).toBe(true);
+
+      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 17, dependency2: 79, testField: 'value' }, [])).toBe(true);
+      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 17, dependency2: 80, testField: 'value' }, [])).toBe(true);
+      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 17, dependency2: 81, testField: 'value' }, [])).toBe(true);
+
+      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 18, dependency2: 79, testField: 'value' }, [])).toBe(true);
+      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 18, dependency2: 80, testField: 'value' }, [])).toBe(true);
+      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 18, dependency2: 81, testField: 'value' }, [])).toBe(true);
+    });
+
+    it('evaluates DNF conditions correctly', () => {
+      const fieldSpecs = [
+        {
+          type: 'text',
+          name: 'testField',
+          constraints: {
+            required: [
+              [
+                {
+                  type: 'max',
+                  field: 'dependency1',
+                  value: 17
+                }, {
+                  type: 'min',
+                  field: 'dependency2',
+                  value: 80
+                }
+              ],
+              [
+                {
+                  type: 'min',
+                  field: 'dependency1',
+                  value: 25
+                }
+              ]
+            ]
+          }
+        },
+        {
+          type: 'number',
+          name: 'dependency1'
+        }, 
+        {
+          type: 'number',
+          name: 'dependency2'
+        }
+      ];
+
+      const formSpec = { fields: fieldSpecs };
+
+      // No value for testField
+      // clause 1 of DNF condition
+      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 16, dependency2: 79}, [])).toBe(true);
+      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 16, dependency2: 80}, [])).toBe(false);
+      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 16, dependency2: 81}, [])).toBe(false);
+
+      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 17, dependency2: 79 }, [])).toBe(true);
+      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 17, dependency2: 80 }, [])).toBe(false);
+      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 17, dependency2: 81 }, [])).toBe(false);
+      
+      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 18, dependency2: 79 }, [])).toBe(true);
+      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 18, dependency2: 80 }, [])).toBe(true);
+      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 18, dependency2: 81 }, [])).toBe(true);
+
+      // clause 2 of DNF condition
+      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 24, dependency2: 79}, [])).toBe(true);
+      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 24, dependency2: 80}, [])).toBe(true); 
+      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 24, dependency2: 81}, [])).toBe(true);
+
+      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 25, dependency2: 79 }, [])).toBe(false);
+      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 25, dependency2: 80 }, [])).toBe(false);
+      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 25, dependency2: 81 }, [])).toBe(false);
+      
+      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 26, dependency2: 79 }, [])).toBe(false);
+      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 26, dependency2: 80 }, [])).toBe(false);
+      expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 26, dependency2: 81 }, [])).toBe(false);
 
       // Value given for testField - should always be true
       expect(evaluateRequiredValidity(fieldSpecs[0], formSpec, { dependency1: 16, dependency2: 79, testField: 'value' }, [])).toBe(true);

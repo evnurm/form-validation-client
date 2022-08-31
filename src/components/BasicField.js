@@ -30,7 +30,7 @@ function BasicField({ name, type, constraints, label, placeholder, onChange, val
         type={type}
         placeholder={placeholder}
         style={{ display: 'block' }}
-        value={value}
+        value={value ?? ''}
         onChange={handleChange}
         id={name}
         {...constraints}
