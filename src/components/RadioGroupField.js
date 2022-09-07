@@ -7,7 +7,7 @@ function RadioGroupField({ name, label, constraints, onChange, value: chosenValu
         <label>{label}</label>
       </div>
       {constraints.values.map(({ value, label }, index) => (
-        <>
+        <span key={name + '-option-' + value}>
           <label htmlFor={`${name}-option-${index}`}>{label}</label>
           <input
             type="radio"
@@ -17,7 +17,7 @@ function RadioGroupField({ name, label, constraints, onChange, value: chosenValu
             onChange={() => onChange(value)}
             checked={chosenValue === value}
           />
-        </>
+        </span>
       ))}
     </div>
   );

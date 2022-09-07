@@ -7,7 +7,7 @@ function CheckboxGroupField({ name, label, constraints, onChange, value: chosenV
         <label>{label}</label>
       </div>
       {constraints.values.map(({ value, label }, index) => (
-        <>
+        <span key={name + '-option-' + value}>
           <input
             type="checkbox"
             name={name}
@@ -15,9 +15,10 @@ function CheckboxGroupField({ name, label, constraints, onChange, value: chosenV
             id={`${name}-option-${index}`}
             onChange={() =>  onChange(value)}
             checked={chosenValues?.includes(value)}
+ 
           />
           <label htmlFor={`${name}-option-${index}`}>{label}</label>
-        </>
+        </span>
       ))}
     </div>
   );

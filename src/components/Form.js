@@ -6,7 +6,7 @@ function Form() {
   const form = useForm('person');
   const onValidateClick = async () => console.log('form.validate()',  await form.validate());
 
-  const fields = useMemo(() => form.fields.map(field => <Field specification={field} />), [form.fields]);
+  const fields = useMemo(() => form.fields.map(field => <Field key={field.name} specification={field} />), [form.fields]);
 
   const submitForm = async () => {
     const formValidityState = form.validate();
