@@ -1,4 +1,3 @@
-import { getChangeHandler } from './changeHandlers';
 import validators from './constraintValidators';
 import {
   evaluateConstraintValidity,
@@ -68,44 +67,64 @@ const getDependencyFieldNames = fieldSpec => {
   return [...dependentFieldNames];
 };
 
-export const createField = (fieldSpec, formSpec, functions) => {
-  const dependencies = getDependencyFieldNames(fieldSpec);
-  const fieldValidator = async (values) => {
-    const errors = [];
-    const fieldValue = values[fieldSpec.name];
+export const createFieldsForGroupInstance = (groupFieldSpec, formSpec, functions, index) => {
+  if (!groupFieldSpec)
+    throw new Error('Group field specification must be provided');
 
-    const requiredValidity = evaluateRequiredValidity(fieldSpec, formSpec, values, errors);
-    if (requiredValidity && !fieldValue) {
-      return { validity: true, errors };
-    } else if (!requiredValidity) {
-      return { validity: false, errors };
-    }
+  const groupFieldName = groupFieldSpec.name;
+  return groupFieldSpec.fields.map(fieldSpec => createField(fieldSpec, formSpec, functions, { group: groupFieldName, index }));
+};
 
-    const typeValidity = evaluateTypeValidity(fieldSpec, fieldValue, errors);
-    if (!typeValidity) {
-      return { validity: false, errors };
-    }
+const getFieldValidatorForFieldSpec = (fieldSpec, formSpec, functions) => async (values, groupOptions) => {
+  const errors = [];
+  let fieldValue;
+  if (groupOptions?.group && groupOptions?.instanceIndex !== undefined) {
+    fieldValue = values[groupOptions.group][groupOptions.instanceIndex][fieldSpec.name];
+  } else
+    fieldValue = values[fieldSpec.name];
 
-    const constraintValidity = evaluateConstraintValidity(fieldSpec, fieldValue, errors);
-    if (!constraintValidity) {
-      return { validity: false, errors };
-    }
+  const fieldSpecWithGroupInformation = {...fieldSpec, group: groupOptions?.group, index: groupOptions?.instanceIndex};
+  const requiredValidity = evaluateRequiredValidity(fieldSpecWithGroupInformation, formSpec, values, errors);
 
-    const functionValidity = await evaluateFunctionValidity(fieldSpec, values, functions, errors);
-
-    if (!functionValidity) return { validity: false, errors };
+  if (requiredValidity && !fieldValue) {
     return { validity: true, errors };
-  };
+  } else if (!requiredValidity) {
+    return { validity: false, errors };
+  }
+
+  const typeValidity = evaluateTypeValidity(fieldSpec, fieldValue, errors);
+  if (!typeValidity) {
+    return { validity: false, errors };
+  }
+
+  const constraintValidity = evaluateConstraintValidity(fieldSpec, fieldValue, errors);
+  if (!constraintValidity) {
+    return { validity: false, errors };
+  }
+
+  const functionValidity = await evaluateFunctionValidity(fieldSpec, values, functions, errors);
+  if (!functionValidity) return { validity: false, errors };
+
+  return { validity: true, errors };
+};
+
+export const createField = (fieldSpec, formSpec, functions, options) => {
+  const dependencies = getDependencyFieldNames(fieldSpec);
+
+  // prevent forwarding non-HTML constraints to HTML elements
+  const publishableConstraints = { ...fieldSpec.constraints };
+  delete publishableConstraints.clientSideFunctions;
 
   return {
     name: fieldSpec.name,
     type: fieldSpec.type,
     label: fieldSpec.html?.label,
     placeholder: fieldSpec.html?.placeholder,
-    constraints: { ...fieldSpec.constraints },
-    validator: fieldValidator,
+    constraints: publishableConstraints,
+    validator: getFieldValidatorForFieldSpec(fieldSpec, formSpec, functions),
     dependencies,
-    fields: fieldSpec.fields?.map(field => createField(field)),
-    onChange: getChangeHandler(fieldSpec.type)
+    group: options?.group,
+    index: options?.index,
+    onChange: () => {}
   };
 };

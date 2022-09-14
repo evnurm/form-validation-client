@@ -1,7 +1,8 @@
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { getChangeHandler } from '../utils/changeHandlers';
-import { isFieldRequired, createField } from '../utils/formTools';
+import { isFieldRequired, createField, createFieldsForGroupInstance } from '../utils/formTools';
 import FormContext from '../FormContext';
+import { INPUT_TYPES } from '../form-input-types';
 
 const useForm = (name) => {
   const { forms, functions } = useContext(FormContext);
@@ -10,24 +11,64 @@ const useForm = (name) => {
   const [validities, setValidities] = useState({});
   const [fieldErrors, setFieldErrors] = useState({});
   const [fieldsRequired, setFieldsRequired] = useState({});
+  const [groupFields, setGroupFields] = useState({});
+  const [groupFieldList, setGroupFieldList] = useState([]);
 
   const fields = useMemo(() => specification.fields.map(fieldSpec => createField(fieldSpec, specification, functions)), [specification]);
+
+  const addGroupInstance = (groupFieldName) => {
+    const groupFieldSpecification = specification.fields.find(field => field.name === groupFieldName);
+    if (!groupFieldSpecification || groupFieldSpecification.type !== INPUT_TYPES.GROUP)
+      throw new Error(`Group field '${groupFieldName}' does not exist`);
+
+    const groupField = groupFields[groupFieldName];
+    const instanceFields = createFieldsForGroupInstance(groupFieldSpecification, specification, functions, groupField?.length ?? 0);
+    const newGroupField = groupField ? [...groupField, instanceFields] : [instanceFields];
+    const newGroupFields = {...groupFields, [groupFieldName]: newGroupField};
+    setGroupFields(newGroupFields);
+    setGroupFieldList([...groupFieldList, ...instanceFields]);
+  };
+
+  const simpleFieldChangeHandler = (field, value) => {
+    const newValue = getChangeHandler(field.type)(value, inputData[field.name]);
+    setFieldValue(field, newValue);
+  };
+
+  const getValueInGroupInstance = (groupName, instanceIndex, fieldName, data) => {
+    const groupValue = data[groupName];
+    if (!groupValue) return;
+
+    const groupInstanceValue = groupValue[instanceIndex];
+    if (!groupInstanceValue) return;
+
+    const instanceFieldValue = groupInstanceValue[fieldName];
+    if (!instanceFieldValue) return;
+
+    return instanceFieldValue;
+  };
+
+  const getFieldValueInGroupInstance = (groupName, instanceIndex, fieldName) => getValueInGroupInstance(groupName, instanceIndex, fieldName, inputData);
+  const getFieldValidityInGroupInstance = (groupName, instanceIndex, fieldName) => getValueInGroupInstance(groupName, instanceIndex, fieldName, validities);
+  const getFieldErrorsInGroupInstance = (groupName, instanceIndex, fieldName) => getValueInGroupInstance(groupName, instanceIndex, fieldName, fieldErrors);
+
   const fieldData = useMemo(() => {
-    return fields.map(field => ({
-      ...field,
-      constraints: {
-        ...field.constraints,
-        required: fieldsRequired[field.name]
-      },
-      value: inputData[field.name],
-      errors: fieldErrors[field.name],
-      onChange: (value) => {
-        const newValue = getChangeHandler(field.type)(value, inputData[field.name]);
-        setFieldValue(field.name, newValue);
-      }
-    }));
-  
-  }, [inputData, validities, fields, fieldErrors, fieldsRequired]);
+    const fieldCreator = fields => {
+      return fields.map(field => ({
+        ...field,
+        constraints: {
+          ...field.constraints,
+          required: fieldsRequired[field.name]
+        },
+        value: field.group ? getFieldValueInGroupInstance(field.group, field.index, field.name) : inputData[field.name],
+        validity: field.group ? getFieldValidityInGroupInstance(field.group, field.index, field.name) : validities[field.name],
+        errors: field.group ? getFieldErrorsInGroupInstance(field.group, field.index, field.name) : fieldErrors[field.name],
+        onChange: (value) => simpleFieldChangeHandler(field, value),
+        addInstance: () => addGroupInstance(field.name),
+        fields: groupFields[field.name] && groupFields[field.name].map(instance => fieldCreator(instance))
+      })
+    )};
+    return fieldCreator(fields);
+  }, [inputData, validities, fields, fieldErrors, fieldsRequired, groupFields, groupFieldList]);
 
   const evaluateRequiredConstraint = (field, inputValues) => {
     if (!field.constraints?.required)
@@ -43,14 +84,6 @@ const useForm = (name) => {
       constraintValue: field.constraints.required,
       dependencies: deps
     });
-  };
-
-  const getFields = () => {
-    return fields.map(field => ({
-      ...field,
-      constraints: field.constraints,
-      required: fieldsRequired[field.name]
-    }));
   };
 
   const updateDependentFieldsRequired = (fieldName, inputValues) => {
@@ -71,6 +104,7 @@ const useForm = (name) => {
     
     const newValidities = {...fieldValidities};
     const newErrors = {...errors};
+    
     validityStates.forEach((validityState, index) => {
       newValidities[dependentFields[index].name] = validityState.validity;
       newErrors[dependentFields[index].name] = validityState.errors;
@@ -83,23 +117,62 @@ const useForm = (name) => {
     return inputData[fieldName];
   };
 
-  const setFieldValue = async (fieldName, value) => {
-    const field = fields.find(field => field.name === fieldName);
-    if (!field)
-      throw new Error(`Cannot update non-existing field '${fieldName}'`);
+  const setFieldValue = async (fieldObject, value) => {
+    const fieldName = fieldObject.name;
+    let field;
+    
+    if (!fieldObject.group && !fieldObject.index)
+      field = fields.find(field => field.name === fieldName);
+    else {
+      field = groupFieldList.find(field => field.group === fieldObject.group && field.index === fieldObject.index && field.name === fieldName);
+    }
 
-    const newInputData = { ...inputData, [fieldName]: value };
-    const { validity, errors } = await field.validator(newInputData);
+    if (!field)
+      throw new Error(`Cannot update non-existing field '${fieldName + (fieldObject.index ? ('@' + fieldObject.index) : '')}'`);
+    
+    let newInputData;
+
+    // Handle group fields
+    if (field.group && field.index !== undefined) {
+      const inputDataGroupField = inputData[field.group] || [];
+      if (!inputDataGroupField[field.index]) {
+        inputDataGroupField[field.index] = {};
+      }
+      inputDataGroupField[field.index][fieldName] = value;
+      newInputData = { ...inputData, [field.group]: inputDataGroupField };
+    } else {
+      newInputData = { ...inputData, [fieldName]: value }; // simple (non-group) field
+    }
+
+    const { validity, errors } = await field.validator(newInputData, { group: field.group, instanceIndex: field.index });
+    
+    let newFieldValidity = validity;
+
+    if (field.group && field.index !== undefined) {
+      newFieldValidity = validities[field.group] || [];
+      if (!newFieldValidity[field.index]) {
+        newFieldValidity[field.index] = {};
+      }
+      newFieldValidity[field.index][fieldName] = validity;
+    }
 
     const newValidities = {
       ...validities,
-      [fieldName]: validity
+      [field.group ?? fieldName]: newFieldValidity
     };
 
-    const newErrors = {...fieldErrors, [fieldName]: errors };
-    updateDependentFieldsRequired(fieldName, newInputData);
-    
+    let newErrors = {...fieldErrors, [fieldName]: errors };
+    if (field.group && field.index !== undefined) {
+      newErrors = {...fieldErrors, [field.group]: fieldErrors[field.group] || []};
+      if (!newErrors[field.group][field.index]) {
+        newErrors[field.group][field.index] = {};
+      }
+      newErrors[field.group][field.index][fieldName] = errors;
+    }
+
     const { validities: updatedValidities, errors: updatedErrors} = await updateDependentFieldsValidity(fieldName, newInputData, newValidities, newErrors);
+
+    updateDependentFieldsRequired(fieldName, newInputData);
     setInputData(newInputData);
     setValidities(updatedValidities);
     setFieldErrors(updatedErrors);
@@ -123,9 +196,9 @@ const useForm = (name) => {
     setFieldsRequired(requiredStatuses);
   }, []);
 
+
   return {
     fields: fieldData,
-    getFields,
     getFieldValue,
     setFieldValue,
     getFieldValues,

@@ -8,8 +8,9 @@ function Form() {
 
   const fields = useMemo(() => form.fields.map(field => <Field key={field.name} specification={field} />), [form.fields]);
 
-  const submitForm = async () => {
-    const formValidityState = form.validate();
+  const submitForm = async (e) => {
+    e.preventDefault();
+    const formValidityState = await form.validate();
 
     if (formValidityState.validity) {
       const formData = form.getFieldValues();
@@ -28,11 +29,11 @@ function Form() {
 
   return (
     <>
-    <form method="POST" action="http://localhost:3001/form">
-      {fields}
-    </form>
-    <button onClick={submitForm}>Submit form</button>
-    <button onClick={onValidateClick}>Validate form</button>
+      <form>
+        {fields}
+      </form>
+      <button onClick={submitForm}>Submit form</button>
+      <button onClick={onValidateClick}>Validate form</button>
     </>
   );
 }

@@ -16,9 +16,12 @@ const getConstraintValidators = (constraintKeys) => {
 };
 
 export const evaluateRequiredValidity = (fieldSpec, formSpec, values, errors) => {
-  const fieldValue = values[fieldSpec.name];
   const requiredCondition = fieldSpec.constraints?.required;
   const requiredValidator = constraintValidatorFunctions.required;
+  
+  let fieldValue = values[fieldSpec.name];
+  if (fieldSpec.group && fieldSpec.index !== undefined && fieldSpec.name)
+    fieldValue = values[fieldSpec.group][fieldSpec.index][fieldSpec.name];
 
   if (requiredCondition && !requiredValidator({ value: fieldValue, constraintValue: requiredCondition, dependencies: getFieldDependencies(formSpec, fieldSpec, values) })) {
     errors.push('required');
