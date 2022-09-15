@@ -12,7 +12,6 @@ const useForm = (name) => {
   const [fieldErrors, setFieldErrors] = useState({});
   const [fieldsRequired, setFieldsRequired] = useState({});
   const [groupFields, setGroupFields] = useState({});
-  const [groupFieldList, setGroupFieldList] = useState([]);
 
   const fields = useMemo(() => specification.fields.map(fieldSpec => createField(fieldSpec, specification, functions)), [specification]);
 
@@ -26,7 +25,6 @@ const useForm = (name) => {
     const newGroupField = groupField ? [...groupField, instanceFields] : [instanceFields];
     const newGroupFields = {...groupFields, [groupFieldName]: newGroupField};
     setGroupFields(newGroupFields);
-    setGroupFieldList([...groupFieldList, ...instanceFields]);
   };
 
   const simpleFieldChangeHandler = (field, value) => {
@@ -68,7 +66,7 @@ const useForm = (name) => {
       })
     )};
     return fieldCreator(fields);
-  }, [inputData, validities, fields, fieldErrors, fieldsRequired, groupFields, groupFieldList]);
+  }, [inputData, validities, fields, fieldErrors, fieldsRequired, groupFields]);
 
   const evaluateRequiredConstraint = (field, inputValues) => {
     if (!field.constraints?.required)
@@ -104,7 +102,7 @@ const useForm = (name) => {
     
     const newValidities = {...fieldValidities};
     const newErrors = {...errors};
-    
+
     validityStates.forEach((validityState, index) => {
       newValidities[dependentFields[index].name] = validityState.validity;
       newErrors[dependentFields[index].name] = validityState.errors;
@@ -124,7 +122,7 @@ const useForm = (name) => {
     if (!fieldObject.group && !fieldObject.index)
       field = fields.find(field => field.name === fieldName);
     else {
-      field = groupFieldList.find(field => field.group === fieldObject.group && field.index === fieldObject.index && field.name === fieldName);
+      field = groupFields[fieldObject.group][fieldObject.index].find(f => f.name === fieldName);
     }
 
     if (!field)
