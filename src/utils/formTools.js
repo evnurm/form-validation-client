@@ -6,7 +6,6 @@ import {
   evaluateTypeValidity
 } from './validationTools';
 
-
 export const getFieldDependencies = (formSpec, fieldSpec, values) => {
   const dependencies = {};
   const dependentFieldNames = getDependencyFieldNames(fieldSpec);  
@@ -79,13 +78,18 @@ const getFieldValidatorForFieldSpec = (fieldSpec, formSpec, functions) => async 
   const errors = [];
   let fieldValue;
   if (groupOptions?.group && groupOptions?.instanceIndex !== undefined) {
-    fieldValue = values[groupOptions.group][groupOptions.instanceIndex][fieldSpec.name];
+    if (
+      values[groupOptions.group] &&
+      values[groupOptions.group][groupOptions.instanceIndex] &&
+      values[groupOptions.group][groupOptions.instanceIndex][fieldSpec.name]
+    ) {
+      fieldValue = values[groupOptions.group][groupOptions.instanceIndex][fieldSpec.name];
+    }
   } else
     fieldValue = values[fieldSpec.name];
-
   const fieldSpecWithGroupInformation = {...fieldSpec, group: groupOptions?.group, index: groupOptions?.instanceIndex};
   const requiredValidity = evaluateRequiredValidity(fieldSpecWithGroupInformation, formSpec, values, errors);
-
+  
   if (requiredValidity && !fieldValue) {
     return { validity: true, errors };
   } else if (!requiredValidity) {

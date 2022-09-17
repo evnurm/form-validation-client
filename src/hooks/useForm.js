@@ -183,8 +183,18 @@ const useForm = (name) => {
   const validate = async () => {
     const validityStates = (await Promise.allSettled(fields.map(field => field.validator(inputData)))).map(({ value }) => value);
     const result = { validity: validityStates.every(validityState => validityState.validity), errors: {} };
-
     validityStates.forEach((validityState, index) => result.errors[fields[index].name] = validityState.errors);
+
+    // Handle group instance fields
+    const groupFieldValidities = Object.values(groupFields).map(groupField => groupField).flat(2);
+    let groupInstanceFieldValidityStates = (await Promise.allSettled(groupFieldValidities.map(field => field.validator(inputData, { group: field.group, instanceIndex: field.index })))).map(({ value }) =>  value);
+    groupInstanceFieldValidityStates = groupFieldValidities.flat(2).map((field, index) => ({ name: field.name, group: field.group, index: field.index, validityState: groupInstanceFieldValidityStates[index] }));
+    groupInstanceFieldValidityStates.forEach(({ name, group, index, validityState}) => {
+      result.validity = result.validity && validityState.validity;
+      result.errors[group] = result.errors[group] || [];
+      result.errors[group][index] = result.errors[group][index] || {};
+      result.errors[group][index][name] = validityState?.errors;
+    });
     return result;
   };
 
