@@ -1,6 +1,6 @@
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { getChangeHandler } from '../utils/changeHandlers';
-import { isFieldRequired, createField, createFieldsForGroupInstance } from '../utils/formTools';
+import { isFieldRequired, createField, createFieldsForGroupInstance, getFieldAttributeInGroupInstance } from '../utils/formTools';
 import FormContext from '../FormContext';
 import { INPUT_TYPES } from '../form-input-types';
 
@@ -32,22 +32,9 @@ const useForm = (name) => {
     setFieldValue(field, newValue);
   };
 
-  const getValueInGroupInstance = (groupName, instanceIndex, fieldName, data) => {
-    const groupValue = data[groupName];
-    if (!groupValue) return;
-
-    const groupInstanceValue = groupValue[instanceIndex];
-    if (!groupInstanceValue) return;
-
-    const instanceFieldValue = groupInstanceValue[fieldName];
-    if (!instanceFieldValue) return;
-
-    return instanceFieldValue;
-  };
-
-  const getFieldValueInGroupInstance = (groupName, instanceIndex, fieldName) => getValueInGroupInstance(groupName, instanceIndex, fieldName, inputData);
-  const getFieldValidityInGroupInstance = (groupName, instanceIndex, fieldName) => getValueInGroupInstance(groupName, instanceIndex, fieldName, validities);
-  const getFieldErrorsInGroupInstance = (groupName, instanceIndex, fieldName) => getValueInGroupInstance(groupName, instanceIndex, fieldName, fieldErrors);
+  const getFieldValueInGroupInstance = (groupName, instanceIndex, fieldName) => getFieldAttributeInGroupInstance(groupName, instanceIndex, fieldName, inputData);
+  const getFieldValidityInGroupInstance = (groupName, instanceIndex, fieldName) => getFieldAttributeInGroupInstance(groupName, instanceIndex, fieldName, validities);
+  const getFieldErrorsInGroupInstance = (groupName, instanceIndex, fieldName) => getFieldAttributeInGroupInstance(groupName, instanceIndex, fieldName, fieldErrors);
 
   const fieldData = useMemo(() => {
     const fieldCreator = fields => {

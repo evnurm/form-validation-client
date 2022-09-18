@@ -1,4 +1,4 @@
-import { getFieldDependencies } from './formTools';
+import { getFieldDependencies, getFieldAttributeInGroupInstance } from './formTools';
 import constraintValidatorFunctions from '../utils/constraintValidators';
 import typeValidators from './typeValidators';
 
@@ -19,15 +19,10 @@ export const evaluateRequiredValidity = (fieldSpec, formSpec, values, errors) =>
   const requiredCondition = fieldSpec.constraints?.required;
   const requiredValidator = constraintValidatorFunctions.required;
   
-  let fieldValue = values[fieldSpec.name];
-  if (fieldSpec.group && fieldSpec.index !== undefined && fieldSpec.name) {
-    if (
-      values[fieldSpec.group] &&
-      values[fieldSpec.group][fieldSpec.index] &&
-      values[fieldSpec.group][fieldSpec.index][fieldSpec.name]
-    ) 
-      fieldValue = values[fieldSpec.group][fieldSpec.index][fieldSpec.name];
-  }
+  let fieldValue = (fieldSpec.group && fieldSpec.index !== undefined && fieldSpec.name) ?
+    getFieldAttributeInGroupInstance(fieldSpec.group, fieldSpec.index, fieldSpec.name, values) :
+    values[fieldSpec.name];
+  
   if (requiredCondition && !requiredValidator({ value: fieldValue, constraintValue: requiredCondition, dependencies: getFieldDependencies(formSpec, fieldSpec, values) })) {
     errors.push('required');
     return false;
@@ -63,9 +58,14 @@ export const evaluateConstraintValidity = (fieldSpec, fieldValue, errors) => {
 
 export const evaluateFunctionValidity = async (fieldSpec, fieldValues, functions, errors) => {
   const functionValidators = getFunctionValidators(fieldSpec, functions);
+
+  let fieldValue = (fieldSpec.group && fieldSpec.index !== undefined && fieldSpec.name) ?
+    getFieldAttributeInGroupInstance(fieldSpec.group, fieldSpec.index, fieldSpec.name, fieldValues) :
+    fieldValues[fieldSpec.name];
+
   const functionValidities = (
     await Promise.allSettled(
-      functionValidators.map(func => Promise.resolve(func(fieldValues[fieldSpec.name], fieldValues)))
+      functionValidators.map(func => Promise.resolve(func(fieldValue, fieldValues)))
     )
   ).map(({ value }) => value);
  

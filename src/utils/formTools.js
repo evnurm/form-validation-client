@@ -66,6 +66,19 @@ const getDependencyFieldNames = fieldSpec => {
   return [...dependentFieldNames];
 };
 
+export const getFieldAttributeInGroupInstance = (groupName, instanceIndex, fieldName, data) => {
+  const groupValue = data[groupName];
+  if (!groupValue) return;
+
+  const groupInstanceValue = groupValue[instanceIndex];
+  if (!groupInstanceValue) return;
+
+  const instanceFieldValue = groupInstanceValue[fieldName];
+  if (!instanceFieldValue) return;
+
+  return instanceFieldValue;
+};
+
 export const createFieldsForGroupInstance = (groupFieldSpec, formSpec, functions, index) => {
   if (!groupFieldSpec)
     throw new Error('Group field specification must be provided');
@@ -106,7 +119,7 @@ const getFieldValidatorForFieldSpec = (fieldSpec, formSpec, functions) => async 
     return { validity: false, errors };
   }
 
-  const functionValidity = await evaluateFunctionValidity(fieldSpec, values, functions, errors);
+  const functionValidity = await evaluateFunctionValidity(fieldSpecWithGroupInformation, values, functions, errors);
   if (!functionValidity) return { validity: false, errors };
 
   return { validity: true, errors };
