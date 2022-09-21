@@ -72,10 +72,8 @@ export const getFieldAttributeInGroupInstance = (groupName, instanceIndex, field
 
   const groupInstanceValue = groupValue[instanceIndex];
   if (!groupInstanceValue) return;
-
+  
   const instanceFieldValue = groupInstanceValue[fieldName];
-  if (!instanceFieldValue) return;
-
   return instanceFieldValue;
 };
 

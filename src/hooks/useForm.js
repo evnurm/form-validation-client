@@ -4,14 +4,16 @@ import { isFieldRequired, createField, createFieldsForGroupInstance, getFieldAtt
 import FormContext from '../FormContext';
 import { INPUT_TYPES } from '../form-input-types';
 
-const useForm = (name) => {
-  const { forms, functions } = useContext(FormContext);
-  const specification = forms[name];
+const useForm = (field, functionValidators) => {
+  const { forms, functions: contextFunctions } = useContext(FormContext);
   const [inputData, setInputData] = useState({});
   const [validities, setValidities] = useState({});
   const [fieldErrors, setFieldErrors] = useState({});
   const [fieldsRequired, setFieldsRequired] = useState({});
   const [groupFields, setGroupFields] = useState({});
+
+  const specification = typeof field === 'string' ? forms[field] : field; // arg = form spec name or spec itself
+  const functions = functionValidators ?? contextFunctions;
 
   const fields = useMemo(() => specification.fields.map(fieldSpec => createField(fieldSpec, specification, functions)), [specification]);
 

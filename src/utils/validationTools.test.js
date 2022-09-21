@@ -81,7 +81,7 @@ describe('validationTools', () => {
     });
   });
 
-  describe('evaluateFunctionValidity', () => {;
+  describe('evaluateFunctionValidity', () => {
     const textStartsWithX = x => x.startsWith('X');
     const textEndsWithY = x => x.endsWith('Y');
     const functions = { textStartsWithX, textEndsWithY };
